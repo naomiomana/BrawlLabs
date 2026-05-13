@@ -75,6 +75,20 @@ app.get('/api/player/:tag', async (req, res) => {
     }
 });
 
+app.get('/api/debug-ip', async (req, res) => {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        if (!response.ok) {
+            return res.status(response.status).json({ error: `Failed to fetch IP: ${response.statusText}` });
+        }
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching public IP:', error);
+        res.status(500).json({ error: 'Internal server error while fetching public IP address.' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
