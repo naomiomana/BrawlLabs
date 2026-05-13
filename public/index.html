@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars Player Lookup</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="meta.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- App Navigation -->
+        <nav class="app-nav">
+            <a href="index.html" class="nav-link active">Player Lookup</a>
+            <a href="meta.html" class="nav-link">Meta Guide</a>
+            <a href="about.html" class="nav-link">About</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+            <a href="privacy.html" class="nav-link">Privacy</a>
+        </nav>
+
+        <!-- Search Screen -->
+        <div id="search-view" class="view-section active">
+            <header>
+                <h1>Brawl Stars Tracker</h1>
+                <p>Search player stats, track performance, and explore the current Brawl Stars meta.</p>
+            </header>
+
+            <div class="search-section">
+                <form id="searchForm">
+                    <div class="input-container">
+                        <label for="player-tag">Enter your player tag</label>
+                        <div class="input-group">
+                            <input type="text" id="player-tag" placeholder="#2CQJLLUGUV">
+                            <button type="submit" id="search-btn">Search Player</button>
+                        </div>
+                        <div class="helper-text">
+                            <p>This is NOT your username. It’s your player tag.</p>
+                            <button type="button" class="guide-link" id="open-guide">Where do I find my tag?</button>
+                        </div>
+                    </div>
+                </form>
+                <div id="error-message" class="error hidden"></div>
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>Loading player data...</p>
+                </div>
+            </div>
+
+            <!-- Recent Searches -->
+            <div id="recent-searches-container" class="recent-searches hidden">
+                <span class="recent-label">Recent:</span>
+                <div id="recent-tags"></div>
+            </div>
+
+            <!-- Daily Meta & Compare -->
+            <div class="home-features-grid">
+                <!-- Daily Meta -->
+                <div class="home-card daily-meta">
+                    <div class="card-header-flex">
+                        <h3>Top Picks Today</h3>
+                        <span class="badge">Today</span>
+                    </div>
+                    <div class="meta-picks-preview">
+                        <div class="pick-item">
+                            <img src="https://cdn.brawlify.com/brawlers/borderless/16000068.png" alt="Cordelius">
+                            <span>Cordelius</span>
+                        </div>
+                        <div class="pick-item">
+                            <img src="https://cdn.brawlify.com/brawlers/borderless/16000078.png" alt="Melodie">
+                            <span>Melodie</span>
+                        </div>
+                        <div class="pick-item">
+                            <img src="https://cdn.brawlify.com/brawlers/borderless/16000009.png" alt="Spike">
+                            <span>Spike</span>
+                        </div>
+                    </div>
+                    <a href="meta.html" class="guide-link view-full-btn" style="display:block; margin-top:15px;">View Full Meta Guide &rarr;</a>
+                </div>
+
+                <!-- Compare Players -->
+                <div class="home-card compare-players">
+                    <h3>Compare Players</h3>
+                    <p class="muted-text" style="font-size:13px; margin-bottom:15px;">See who has the better stats side-by-side.</p>
+                    <div class="compare-inputs">
+                        <input type="text" id="compare-tag-1" placeholder="Tag 1 (e.g. #ABC...)">
+                        <input type="text" id="compare-tag-2" placeholder="Tag 2">
+                        <button type="button" id="compare-btn" class="btn-secondary" style="width:100%; margin-top:10px;">Compare Tags</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ad Space -->
+            <div class="ad-container">Ad Space</div>
+
+            <!-- Informational Sections -->
+            <div class="info-section">
+                <h2>What is a Player Tag?</h2>
+                <p>Your Player Tag is a unique identifier assigned to your Brawl Stars account. It typically starts with a hashtag (#) followed by a combination of letters and numbers (e.g., #2CQJLLUGUV). This tag is used to publicly track your progress, trophies, and brawler statistics without needing your username or password.</p>
+                <p>You can find your tag by opening the Brawl Stars app, tapping on your profile icon in the top left corner, and looking right below your profile picture.</p>
+            </div>
+
+            <!-- Ad Space -->
+            <div class="ad-container">Ad Space</div>
+
+            <div class="info-section">
+                <h2>How Player Lookup Works</h2>
+                <p>Brawl Stars Tracker uses the official Supercell API to securely fetch public data about your account. When you enter your player tag, our system retrieves real-time statistics including your total trophies, 3v3 victories, solo/duo wins, and individual brawler performance.</p>
+                <p>This tool is designed to help you analyze your gameplay, track your rank progression, and see which brawlers you perform best with.</p>
+            </div>
+
+            <div class="info-section">
+                <h2>How Meta Rankings Work</h2>
+                <p>Our Meta Guide provides a community-driven look at the current state of the game. We analyze pick rates, win rates, and recent balance changes to determine which brawlers are currently dominating the arena.</p>
+                <p>Whether you're looking for the best brawler for Solo Showdown, or a synergistic team pick for Brawl Ball, our tier lists and strategy guides are updated regularly to reflect the latest meta shifts.</p>
+            </div>
+
+            <!-- Ad Space -->
+            <div class="ad-container">Ad Space</div>
+
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div id="dashboard-view" class="view-section hidden">
+            
+            <!-- Player Header -->
+            <div class="dashboard-header">
+                <div class="header-top">
+                    <div class="player-identity">
+                        <div class="player-avatar">
+                            <!-- Placeholder icon -->
+                            <img src="https://cdn.brawlify.com/profile/28000000.png" alt="Icon" id="player-icon" onerror="this.src='https://cdn.brawlify.com/profile/28000000.png'">
+                        </div>
+                        <div class="player-names">
+                            <h2 id="res-name">Player Name</h2>
+                            <div class="tag-wrapper">
+                                <span id="res-tag" class="tag-badge">#TAG</span>
+                                <button type="button" id="copy-tag-btn" class="copy-btn">📋 Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="header-main-stats">
+                        <div class="h-stat">
+                            <span class="h-label">Trophies</span>
+                            <span class="h-val trophy-text" id="head-trophies">0</span>
+                        </div>
+                        <div class="h-stat">
+                            <span class="h-label">Highest</span>
+                            <span class="h-val" id="head-highest">0</span>
+                        </div>
+                        <div class="h-actions">
+                            <button type="button" id="search-again-btn" class="btn-secondary">Search Another</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <nav class="dashboard-tabs">
+                    <button class="tab-btn active">Profile</button>
+                    <button class="tab-btn disabled" disabled>Brawlers <span class="badge-soon">Soon</span></button>
+                    <button class="tab-btn disabled" disabled>Battles <span class="badge-soon">Soon</span></button>
+                    <button class="tab-btn disabled" disabled>History <span class="badge-soon">Soon</span></button>
+                </nav>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-grid">
+                
+                <!-- Main Column -->
+                <div class="dash-col-main">
+                    
+                    <!-- Progress Section -->
+                    <div class="dash-card">
+                        <h3 class="card-title">Account Progress</h3>
+                        <div class="progress-container">
+                            <div class="progress-header">
+                                <span>Brawler Collection</span>
+                                <span class="progress-text"><strong id="collection-count">0</strong> / 104</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="collection-fill" style="width: 0%"></div>
+                            </div>
+                            <div class="progress-percent" id="collection-percent">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- Top Brawlers -->
+                    <div class="dash-card">
+                        <div class="card-header-flex">
+                            <h3 class="card-title">Top Brawlers</h3>
+                            <span class="muted-text">By Trophies</span>
+                        </div>
+                        <div class="top-brawlers" id="top-brawlers-container">
+                            <!-- Brawlers injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Trophy Breakdown -->
+                    <div class="dash-card">
+                        <h3 class="card-title">Trophy Breakdown</h3>
+                        <div class="breakdown-grid">
+                            <div class="breakdown-item">
+                                <div class="bd-icon rank-30">🏆</div>
+                                <div class="bd-info">
+                                    <span class="bd-label">1000+ Trophies</span>
+                                    <strong class="bd-value" id="bd-1000">0</strong>
+                                </div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="bd-icon rank-25">🏆</div>
+                                <div class="bd-info">
+                                    <span class="bd-label">750+ Trophies</span>
+                                    <strong class="bd-value" id="bd-750">0</strong>
+                                </div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="bd-icon rank-20">🏆</div>
+                                <div class="bd-info">
+                                    <span class="bd-label">500+ Trophies</span>
+                                    <strong class="bd-value" id="bd-500">0</strong>
+                                </div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="bd-icon rank-15">🏆</div>
+                                <div class="bd-info">
+                                    <span class="bd-label">300+ Trophies</span>
+                                    <strong class="bd-value" id="bd-300">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Smart Recommendations -->
+                    <div class="dash-card">
+                        <div class="card-header-flex">
+                            <h3 class="card-title">Recommended For You</h3>
+                            <span class="muted-text">Smart Suggestions</span>
+                        </div>
+                        <div class="top-brawlers" id="recommendations-container">
+                            <!-- Recommendations injected via JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Side Column -->
+                <div class="dash-col-side">
+                    
+                    <!-- Overview Stats -->
+                    <div class="dash-card">
+                        <h3 class="card-title">Overview</h3>
+                        <div class="stat-list">
+                            <div class="stat-row">
+                                <span class="stat-label">Club</span>
+                                <span class="stat-val club-name" id="res-club">No Club</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">EXP Level</span>
+                                <strong class="stat-val" id="res-level">0</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">3v3 Victories</span>
+                                <strong class="stat-val" id="res-3v3">0</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Solo Victories</span>
+                                <strong class="stat-val" id="res-solo">0</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Duo Victories</span>
+                                <strong class="stat-val" id="res-duo">0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- About Profile -->
+                    <div class="dash-card about-card">
+                        <h3 class="card-title">About This Profile</h3>
+                        <p id="about-text" class="about-text">Loading...</p>
+                    </div>
+
+                    <!-- Player Snapshot -->
+                    <div class="dash-card snapshot-card">
+                        <h3 class="card-title">Player Snapshot</h3>
+                        <p class="muted-text" style="font-size:13px; margin-bottom:15px;">Download a quick image of your stats.</p>
+                        <button type="button" id="snapshot-btn" class="btn-secondary" style="width:100%;">📸 Download Snapshot</button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Compare View Screen -->
+        <div id="compare-view" class="view-section hidden">
+            <header>
+                <h1>Player Comparison</h1>
+                <p>Head-to-head stats</p>
+                <button type="button" id="back-from-compare-btn" class="btn-secondary" style="margin-top:20px;">&larr; Back to Search</button>
+            </header>
+            <div id="compare-loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Loading comparison data...</p>
+            </div>
+            <div id="compare-error" class="error hidden" style="margin-bottom:20px;"></div>
+            
+            <div class="compare-grid hidden" id="compare-results">
+                <!-- Player 1 Col -->
+                <div class="compare-col" id="compare-p1">
+                    <h2 class="comp-name" id="cp1-name">Player 1</h2>
+                    <div class="comp-tag" id="cp1-tag">#TAG</div>
+                    <div class="comp-stat">
+                        <span>Trophies</span>
+                        <strong id="cp1-trophies" class="trophy-text">0</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>3v3 Victories</span>
+                        <strong id="cp1-3v3">0</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>Best Brawler</span>
+                        <strong id="cp1-best">None</strong>
+                    </div>
+                </div>
+                <!-- Player 2 Col -->
+                <div class="compare-col" id="compare-p2">
+                    <h2 class="comp-name" id="cp2-name">Player 2</h2>
+                    <div class="comp-tag" id="cp2-tag">#TAG</div>
+                    <div class="comp-stat">
+                        <span>Trophies</span>
+                        <strong id="cp2-trophies" class="trophy-text">0</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>3v3 Victories</span>
+                        <strong id="cp2-3v3">0</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>Best Brawler</span>
+                        <strong id="cp2-best">None</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guide Modal -->
+    <div id="guide-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>How to find your tag</h3>
+                <button type="button" class="close-modal" id="close-guide">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>How to find your tag in Brawl Stars:</p>
+                <ol>
+                    <li>Open the game</li>
+                    <li>Tap your profile (top left)</li>
+                    <li>Copy the tag under your name</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Ad Space -->
+    <div class="container">
+        <div class="ad-container">Ad Space</div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

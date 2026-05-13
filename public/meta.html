@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars Meta Guide</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="meta.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- App Navigation -->
+        <nav class="app-nav">
+            <a href="index.html" class="nav-link">Player Lookup</a>
+            <a href="meta.html" class="nav-link active">Meta Guide</a>
+            <a href="about.html" class="nav-link">About</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+            <a href="privacy.html" class="nav-link">Privacy</a>
+        </nav>
+
+        <header class="meta-header">
+            <h1>Brawl Stars Meta Guide</h1>
+            <p>Find the strongest brawlers, weakest picks, and best strategies for solo and team play.</p>
+            <div class="disclaimer">
+                <p><strong>Note:</strong> Meta rankings are based on community data, win rates, pick rates, and recent balance changes. They may change after updates.</p>
+                <p class="last-updated">Last Updated: <strong>Just Now</strong></p>
+            </div>
+        </header>
+
+        <div class="meta-grid">
+            
+            <!-- Best Brawlers Tier List -->
+            <section class="meta-section full-width">
+                <h2>Best Brawlers Right Now</h2>
+                <div class="tier-list">
+                    <div class="tier-row">
+                        <div class="tier-label tier-s">S</div>
+                        <div class="tier-content" id="tier-s-container">
+                            <!-- Rendered via JS -->
+                        </div>
+                    </div>
+                    <div class="tier-row">
+                        <div class="tier-label tier-a">A</div>
+                        <div class="tier-content" id="tier-a-container">
+                            <!-- Rendered via JS -->
+                        </div>
+                    </div>
+                    <div class="tier-row">
+                        <div class="tier-label tier-b">B</div>
+                        <div class="tier-content" id="tier-b-container">
+                            <!-- Rendered via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ad Space -->
+            <div class="ad-container" style="grid-column: 1 / -1;">Ad Space</div>
+
+            <!-- Weakest Brawlers -->
+            <section class="meta-section">
+                <h2>Weakest Brawlers</h2>
+                <div class="card-list" id="weakest-container">
+                    <!-- Rendered via JS -->
+                </div>
+            </section>
+
+            <!-- Best Solo Queue Picks -->
+            <section class="meta-section">
+                <h2>Best Solo Queue Picks</h2>
+                <div class="card-list" id="solo-container">
+                    <!-- Rendered via JS -->
+                </div>
+            </section>
+
+            <!-- Best Team Picks -->
+            <section class="meta-section full-width">
+                <h2>Best Team Picks</h2>
+                <div class="meta-grid-3" id="team-container">
+                    <!-- Rendered via JS -->
+                </div>
+            </section>
+
+            <!-- Best by Game Mode -->
+            <section class="meta-section full-width">
+                <h2>Best by Game Mode</h2>
+                <div class="mode-grid" id="modes-container">
+                    <!-- Rendered via JS -->
+                </div>
+            </section>
+
+            <!-- Ad Space -->
+            <div class="ad-container" style="grid-column: 1 / -1;">Ad Space</div>
+
+            <!-- Strategy Tips -->
+            <section class="meta-section">
+                <h2>Strategy Tips</h2>
+                <ul class="strategy-list">
+                    <li><strong>Play around map control:</strong> Don't just rush for kills. Establish position.</li>
+                    <li><strong>Avoid easy counters:</strong> Don’t first-pick brawlers that are easily countered.</li>
+                    <li><strong>Tank usage:</strong> Use tanks only when the map has enough walls to support them.</li>
+                    <li><strong>Solo Queue survival:</strong> Pick brawlers that can survive mistakes when playing with randoms.</li>
+                </ul>
+            </section>
+
+            <!-- Recent Balance Changes -->
+            <section class="meta-section">
+                <h2>Recent Balance Changes</h2>
+                <div class="balance-list">
+                    <div class="balance-item buff">
+                        <span class="bal-icon">⬆️</span>
+                        <div class="bal-info">
+                            <strong>Brawler Name</strong>
+                            <p>Damage increased by 5%, Super charge rate buffed.</p>
+                        </div>
+                    </div>
+                    <div class="balance-item nerf">
+                        <span class="bal-icon">⬇️</span>
+                        <div class="bal-info">
+                            <strong>Brawler Name</strong>
+                            <p>Health reduced by 10%, Reload speed decreased.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Footer Ad Space -->
+        <div class="ad-container">Ad Space</div>
+
+    </div>
+    <script src="meta.js"></script>
+</body>
+</html>
