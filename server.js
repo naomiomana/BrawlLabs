@@ -22,6 +22,7 @@ app.get('/api/player/:tag', async (req, res) => {
 
         // 2. Remove all spaces and # symbols, then convert to uppercase
         tag = tag.replace(/\s+/g, '').replace(/#/g, '').toUpperCase();
+        console.log(`[DEBUG] Cleaned player tag: ${tag}`);
 
         const apiKey = process.env.BRAWL_STARS_API_KEY;
 
@@ -48,11 +49,14 @@ app.get('/api/player/:tag', async (req, res) => {
 
         // 6. Show different errors based on the status code
         if (!response.ok) {
-            if (response.status === 404) {
-                return res.status(404).json({ error: 'Player not found. Please check the tag and try again.' });
+            if (response.status === 400) {
+                return res.status(400).json({ error: 'Invalid input. Please provide a valid player tag.' });
             }
             if (response.status === 403) {
                 return res.status(403).json({ error: 'Invalid API key or IP address not allowed (403 Forbidden).' });
+            }
+            if (response.status === 404) {
+                return res.status(404).json({ error: 'Player not found. Please check the tag and try again.' });
             }
             if (response.status === 429) {
                 return res.status(429).json({ error: 'Rate limit exceeded. Please wait a moment before searching again.' });

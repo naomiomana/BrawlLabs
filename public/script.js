@@ -30,7 +30,7 @@ function initPlayerLookup() {
     // New Feature Elements
     const recentContainer = document.getElementById('recent-searches-container');
     const recentTagsDiv = document.getElementById('recent-tags');
-    
+
     const compareBtn = document.getElementById('compare-btn');
     const compTag1 = document.getElementById('compare-tag-1');
     const compTag2 = document.getElementById('compare-tag-2');
@@ -39,7 +39,7 @@ function initPlayerLookup() {
     const compareLoading = document.getElementById('compare-loading');
     const compareError = document.getElementById('compare-error');
     const compareResults = document.getElementById('compare-results');
-    
+
     const snapshotBtn = document.getElementById('snapshot-btn');
     const recommendationsContainer = document.getElementById('recommendations-container');
     let currentPlayerStats = null;
@@ -120,81 +120,123 @@ function initPlayerLookup() {
         });
     }
 
+    // Helper to show errors
+    function showError(message) {
+        if (loading) loading.classList.add('hidden');
+        if (errorMsg) {
+            errorMsg.innerHTML = `<span class="error-icon">⚠️</span> <span>${message}</span>`;
+            errorMsg.classList.remove('hidden');
+        }
+    }
+
     // Search function
     async function performSearch(e, forcedTag = null) {
-        if (e) e.preventDefault();
-        
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+
         let rawInput = forcedTag || input.value;
         if (errorMsg) errorMsg.classList.add('hidden');
-        
+
         if (!rawInput || !rawInput.trim()) {
-            if (errorMsg) {
-                errorMsg.textContent = "Please enter a player tag";
-                errorMsg.classList.remove('hidden');
-            }
+            showError("Please enter a player tag.");
             return;
         }
 
         // Clean user input
         let tag = rawInput.replace(/\s+/g, '').replace(/#/g, '').toUpperCase();
-        
+
         if (loading) loading.classList.remove('hidden');
 
         try {
-            // Encode the tag in case there are any special characters left
             const response = await fetch(`/api/player/${encodeURIComponent(tag)}`);
-            
+
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
-                throw new Error("Server error: Received HTML instead of JSON. Ensure your Node.js backend is running.");
+                throw new Error("Something went wrong while contacting the Brawl Stars API.");
+            }
+
+            if (!response.ok) {
+                let errorData = {};
+                try {
+                    errorData = await response.json();
+                } catch (e) {
+                    // Ignore JSON parsing errors
+                }
+
+                if (response.status === 404) {
+                    // Check if they likely entered a username
+                    if (!rawInput.includes('#') && (rawInput.length < 5 || /[a-z]/.test(rawInput) || rawInput.trim().includes(' '))) {
+                        throw new Error("Player tags usually look like #2CQJLLUGUV, not usernames.");
+                    } else {
+                        throw new Error("Player not found. Make sure you entered a valid player tag.");
+                    }
+                } else if (response.status === 400) {
+                    throw new Error("Invalid input. Please provide a valid player tag.");
+                } else if (response.status === 403) {
+                    throw new Error("Invalid API key or IP address not allowed (403 Forbidden).");
+                } else if (response.status === 429) {
+                    throw new Error("Rate limit exceeded. Please wait a moment before searching again.");
+                } else if (response.status >= 500) {
+                    throw new Error("Brawl Stars API server error. Please try again later.");
+                }
+
+                throw new Error(errorData.error || "Something went wrong while contacting the Brawl Stars API.");
             }
 
             const data = await response.json();
 
-            if (!response.ok) {
-                if (response.status === 404) {
-                    throw new Error("Player not found. Make sure you entered your player tag, not your username.");
-                }
-                throw new Error(data.error || 'Failed to fetch player data');
-            }
+            // Log the returned player data in the browser console
+            console.log("Player Data:", data);
 
             currentPlayerStats = data;
             saveRecentSearch(tag);
             loadRecentSearches();
 
+            // Populate the UI with player data
             populateDashboard(data);
 
-            // Switch to Dashboard View
+            // Hide loading state after success
             if (loading) loading.classList.add('hidden');
+
+            // Hide previous errors after success
+            if (errorMsg) {
+                errorMsg.classList.add('hidden');
+                errorMsg.innerHTML = '';
+            }
+
             if (searchView) {
                 searchView.classList.remove('active');
                 searchView.classList.add('hidden');
             }
+
+            // Switch to Dashboard View or dynamically create one if missing
             if (dashboardView) {
                 dashboardView.classList.remove('hidden');
                 dashboardView.classList.add('active');
+            } else {
+                const newDashboard = document.createElement('div');
+                newDashboard.id = 'dashboard-view';
+                newDashboard.className = 'view-section active';
+                newDashboard.innerHTML = `<h2>${data.name || 'Unknown'} (${data.tag || tag})</h2><p>Trophies: ${data.trophies || 0}</p>`;
+                const container = document.querySelector('.container');
+                if (container) container.appendChild(newDashboard);
             }
 
         } catch (error) {
-            if (loading) loading.classList.add('hidden');
-            if (errorMsg) {
-                errorMsg.textContent = error.message;
-                errorMsg.classList.remove('hidden');
-            }
+            showError(error.message);
         }
     }
 
     // Attach search logic robustly
     if (searchForm) {
-        searchForm.addEventListener('submit', function(event) {
+        searchForm.addEventListener('submit', function (event) {
             event.preventDefault();
             performSearch(event);
         });
     }
-    
+
     const searchBtn = document.getElementById('search-btn');
     if (searchBtn) {
-        searchBtn.addEventListener('click', function(event) {
+        searchBtn.addEventListener('click', function (event) {
             if (searchBtn.type === 'button') {
                 event.preventDefault();
                 performSearch(event);
@@ -236,24 +278,24 @@ function initPlayerLookup() {
         compareBtn.addEventListener('click', async () => {
             let t1 = compTag1.value.replace(/\\s+/g, '').replace(/#/g, '').toUpperCase();
             let t2 = compTag2.value.replace(/\\s+/g, '').replace(/#/g, '').toUpperCase();
-            
+
             if (!t1 || !t2) return alert("Please enter both tags to compare.");
 
             searchView.classList.remove('active');
             searchView.classList.add('hidden');
             compareView.classList.remove('hidden');
             compareView.classList.add('active');
-            
+
             compareLoading.classList.remove('hidden');
             compareError.classList.add('hidden');
             compareResults.classList.add('hidden');
 
             try {
                 const [res1, res2] = await Promise.all([
-                    fetch(\`/api/player/\${encodeURIComponent(t1)}\`),
-                    fetch(\`/api/player/\${encodeURIComponent(t2)}\`)
+                    fetch(`/api/player/${encodeURIComponent(t1)}`),
+                    fetch(`/api/player/${encodeURIComponent(t2)}`)
                 ]);
-                
+
                 if (!res1.ok || !res2.ok) throw new Error("Could not find one or both players. Check the tags.");
 
                 const data1 = await res1.json();
@@ -274,23 +316,23 @@ function initPlayerLookup() {
     }
 
     function populateCompareColumn(prefix, data) {
-        document.getElementById(\`\${prefix}-name\`).textContent = data.name || 'Unknown';
-        document.getElementById(\`\${prefix}-tag\`).textContent = data.tag || '';
-        document.getElementById(\`\${prefix}-trophies\`).textContent = formatNum(data.trophies || 0);
-        document.getElementById(\`\${prefix}-3v3\`).textContent = formatNum(data['3vs3Victories'] || 0);
-        
+        document.getElementById(`${prefix}-name`).textContent = data.name || 'Unknown';
+        document.getElementById(`${prefix}-tag`).textContent = data.tag || '';
+        document.getElementById(`${prefix}-trophies`).textContent = formatNum(data.trophies || 0);
+        document.getElementById(`${prefix}-3v3`).textContent = formatNum(data['3vs3Victories'] || 0);
+
         let best = "None";
         if (data.brawlers && data.brawlers.length > 0) {
-            let top = [...data.brawlers].sort((a,b) => (b.trophies || 0) - (a.trophies || 0))[0];
-            best = \`\${top.name} (\${top.trophies}🏆)\`;
+            let top = [...data.brawlers].sort((a, b) => (b.trophies || 0) - (a.trophies || 0))[0];
+            best = `${top.name} (${top.trophies}🏆)`;
         }
-        document.getElementById(\`\${prefix}-best\`).textContent = best;
+        document.getElementById(`${prefix}-best`).textContent = best;
     }
 
     if (snapshotBtn) {
         snapshotBtn.addEventListener('click', () => {
             if (!currentPlayerStats) return;
-            
+
             const canvas = document.createElement('canvas');
             canvas.width = 600;
             canvas.height = 400;
@@ -299,12 +341,12 @@ function initPlayerLookup() {
             // Background
             ctx.fillStyle = '#0f172a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+
             // Text Styles
             ctx.fillStyle = '#3b82f6';
             ctx.font = 'bold 36px sans-serif';
             ctx.fillText(currentPlayerStats.name, 40, 80);
-            
+
             ctx.fillStyle = '#94a3b8';
             ctx.font = '24px monospace';
             ctx.fillText(currentPlayerStats.tag, 40, 120);
@@ -312,18 +354,18 @@ function initPlayerLookup() {
             // Stats
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 28px sans-serif';
-            ctx.fillText(\`Trophies: \${formatNum(currentPlayerStats.trophies || 0)}\`, 40, 200);
-            ctx.fillText(\`Highest: \${formatNum(currentPlayerStats.highestTrophies || 0)}\`, 40, 250);
-            ctx.fillText(\`3v3 Wins: \${formatNum(currentPlayerStats['3vs3Victories'] || 0)}\`, 40, 300);
+            ctx.fillText(`Trophies: ${formatNum(currentPlayerStats.trophies || 0)}`, 40, 200);
+            ctx.fillText(`Highest: ${formatNum(currentPlayerStats.highestTrophies || 0)}`, 40, 250);
+            ctx.fillText(`3v3 Wins: ${formatNum(currentPlayerStats['3vs3Victories'] || 0)}`, 40, 300);
 
             if (currentPlayerStats.brawlers && currentPlayerStats.brawlers.length > 0) {
-                let best = [...currentPlayerStats.brawlers].sort((a,b) => (b.trophies || 0) - (a.trophies || 0))[0];
+                let best = [...currentPlayerStats.brawlers].sort((a, b) => (b.trophies || 0) - (a.trophies || 0))[0];
                 ctx.fillStyle = '#f59e0b';
-                ctx.fillText(\`Best Brawler: \${best.name} (\${best.trophies}🏆)\`, 40, 350);
+                ctx.fillText(`Best Brawler: ${best.name} (${best.trophies}🏆)`, 40, 350);
             }
 
             const link = document.createElement('a');
-            link.download = \`BS_Snapshot_\${currentPlayerStats.name}.png\`;
+            link.download = `BS_Snapshot_${currentPlayerStats.name}.png`;
             link.href = canvas.toDataURL();
             link.click();
         });
@@ -331,13 +373,13 @@ function initPlayerLookup() {
 
     function generateRecommendations(brawlers) {
         if (!recommendationsContainer || !brawlers || brawlers.length === 0) return;
-        
+
         recommendationsContainer.innerHTML = '';
-        
+
         // Strategy 1: "Easy to Use" - High rarity/strong brawlers but low trophies
         let easyTargets = ['SHELLY', 'COLT', 'NITA', 'POCO', 'ROSA'];
         let easyPick = brawlers.find(b => easyTargets.includes(b.name) && b.trophies < 500);
-        
+
         // Strategy 2: "Strong in Meta" - Find an S-Tier or A-Tier they have but haven't pushed
         let metaTargets = ['CORDELIUS', 'MELODIE', 'ANGELO', 'SPIKE', 'PIPER'];
         let metaPick = brawlers.find(b => metaTargets.includes(b.name) && b.trophies < 750 && b !== easyPick);
@@ -345,9 +387,9 @@ function initPlayerLookup() {
         // Strategy 3: "Good for Solo" - Assassins
         let soloTargets = ['LEON', 'EDGAR', 'CROW', 'MORTIS', 'SURGE'];
         let soloPick = brawlers.find(b => soloTargets.includes(b.name) && b.trophies < 800 && b !== easyPick && b !== metaPick);
-        
+
         // Fallbacks if logic finds nothing
-        let sorted = [...brawlers].sort((a,b) => (a.trophies||0) - (b.trophies||0));
+        let sorted = [...brawlers].sort((a, b) => (a.trophies || 0) - (b.trophies || 0));
         if (!easyPick) easyPick = sorted[0]; // Lowest trophy
         if (!metaPick) metaPick = sorted[1] || sorted[0];
         if (!soloPick) soloPick = sorted[2] || sorted[0];
@@ -362,20 +404,22 @@ function initPlayerLookup() {
             if (!r.b) return;
             const card = document.createElement('div');
             card.className = 'brawler-card';
-            card.innerHTML = \`
+            card.innerHTML = `
                 <div class="brawler-img-wrapper">
-                    <img src="https://cdn.brawlify.com/brawlers/borderless/\${r.b.id}.png" class="brawler-img" alt="\${r.b.name}" onerror="this.outerHTML='<div class=\\'brawler-icon\\'>👤</div>'">
+                    <img src="https://cdn.brawlify.com/brawlers/borderless/${r.b.id}.png" class="brawler-img" alt="${r.b.name}" onerror="this.outerHTML='<div class=\\'brawler-icon\\'>👤</div>'">
                 </div>
                 <div class="brawler-info">
-                    <div class="brawler-name">\${r.b.name} <span style="color:var(--text-muted); font-size:12px;">(\${r.b.trophies}🏆)</span></div>
-                    <span class="rec-label \${r.class}">\${r.label}</span>
+                    <div class="brawler-name">${r.b.name} <span style="color:var(--text-muted); font-size:12px;">(${r.b.trophies}🏆)</span></div>
+                    <span class="rec-label ${r.class}">${r.label}</span>
                 </div>
-            \`;
+            `;
             recommendationsContainer.appendChild(card);
         });
     }
 
     function populateDashboard(data) {
+        console.log("populateDashboard called");
+
         // Basic Identity
         if (resName) resName.textContent = data.name || 'Unknown';
         if (resTag) resTag.textContent = data.tag || '';
@@ -384,6 +428,11 @@ function initPlayerLookup() {
 
         // Icon
         if (playerIcon && data.icon && data.icon.id) {
+            playerIcon.onerror = function () {
+                console.log("image failed to load");
+                this.onerror = null; // Prevent infinite loop if fallback also fails
+                this.src = "/default-avatar.png";
+            };
             playerIcon.src = `https://cdn.brawlify.com/profile/${data.icon.id}.png`;
         }
 
@@ -397,7 +446,7 @@ function initPlayerLookup() {
                 resClub.style.color = "var(--text-muted)";
             }
         }
-        
+
         if (resLevel) resLevel.textContent = formatNum(data.expLevel || 0);
         if (res3v3) res3v3.textContent = formatNum(data['3vs3Victories'] || 0);
         if (resSolo) resSolo.textContent = formatNum(data.soloVictories || 0);
@@ -405,14 +454,14 @@ function initPlayerLookup() {
 
         // Brawlers Analysis
         let brawlers = data.brawlers || [];
-        
+
         // Progress
         const unlockedCount = brawlers.length;
         const progressPct = Math.min(100, Math.round((unlockedCount / TOTAL_BRAWLERS) * 100));
-        
+
         if (collectionCount) collectionCount.textContent = unlockedCount;
         if (collectionPercent) collectionPercent.textContent = `${progressPct}%`;
-        
+
         if (collectionFill) {
             // Delay width for animation effect
             setTimeout(() => {
@@ -439,7 +488,7 @@ function initPlayerLookup() {
             topBrawlersContainer.innerHTML = '';
             if (brawlers.length > 0) {
                 const sortedBrawlers = [...brawlers].sort((a, b) => (b.trophies || 0) - (a.trophies || 0)).slice(0, 3);
-                
+
                 sortedBrawlers.forEach(b => {
                     const card = document.createElement('div');
                     card.className = 'brawler-card';
